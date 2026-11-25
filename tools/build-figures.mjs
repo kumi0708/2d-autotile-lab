@@ -13,7 +13,7 @@ const outDir = path.join(root, 'docs/images');
 fs.mkdirSync(outDir, { recursive: true });
 const CHROME = process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const port = 8899;
-const server = spawn(process.execPath, [path.join(root, 'tools/serve.mjs'), String(port)], { stdio: 'ignore' });
+const server = spawn(process.execPath, [path.join(root, 'tools/serve.mjs'), String(port)], { stdio: 'ignore', env: { ...process.env, PORT: String(port) } });
 await new Promise(r => setTimeout(r, 600));
 const prof = fs.mkdtempSync(path.join(os.tmpdir(), 'figs-'));
 const chrome = (...args) => execFileSync(CHROME, ['--headless=new', '--hide-scrollbars', `--user-data-dir=${prof}`, ...args], { maxBuffer: 1 << 28, stdio: ['ignore', 'pipe', 'ignore'] }).toString();
@@ -33,6 +33,7 @@ try {
     ['ui.png', '?seed=11'],
     ['ui-dual.png', '?m=dual16&grid&labels&nodecor&seed=11'],
     ['ui-en.png', '?lang=en&t=volcano&seed=11'],
+    ['ui-compare.png', '?p=test&cmp=blob47&m=edge16&lost'],
   ];
   for (const [name, q] of shots) {
     chrome('--window-size=1500,960', '--virtual-time-budget=6000', `--screenshot=${path.join(outDir, name)}`, `http://localhost:${port}/${q}`);

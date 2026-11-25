@@ -39,16 +39,17 @@ function applyLang() {
   document.documentElement.lang = state.lang;
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = tr()[el.dataset.i18n]; });
   $('#lang').textContent = state.lang === 'ja' ? 'EN' : '日本語';
-  buildMethods(); buildThemes(); drawSheet(); drawInspector();
+  buildMethods(); buildThemes(); buildCompare(); drawSheet(); drawInspector();
 }
 
-$('#methods').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (!b) return; state.method = b.dataset.m; buildMethods(); drawSheet(); drawInspector(); });
+$('#methods').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (!b) return; state.method = b.dataset.m; buildMethods(); buildCompare(); drawSheet(); drawInspector(); });
 $('#themes').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (!b) return; state.theme = b.dataset.t; buildThemes(); drawSheet(); });
 $('#lang').onclick = () => { state.lang = state.lang === 'ja' ? 'en' : 'ja'; localStorage.setItem('lang', state.lang); applyLang(); };
 document.querySelectorAll('.tool').forEach(b => b.onclick = () => { state.tool = +b.dataset.tool; document.querySelectorAll('.tool').forEach(x => x.classList.toggle('on', x === b)); });
 document.querySelectorAll('.brush').forEach(b => b.onclick = () => { state.brush = +b.dataset.b; document.querySelectorAll('.brush').forEach(x => x.classList.toggle('on', x === b)); });
 document.querySelectorAll('.preset').forEach(b => b.onclick = () => {
   const p = b.dataset.p;
+  pushUndo();
   if (p === 'clear') state.grid = new Grid(W, HH);
   else if (p === 'fill') { state.grid = new Grid(W, HH); state.grid.data.fill(1); }
   else state.grid = PRESETS[p](W, HH);
@@ -62,27 +63,100 @@ for (const k of Object.keys(state.opt)) {
 }
 
 // ---------------- painting ----------------
-let painting = null;
+let painting = null, last = null;
 function cellFromEvent(e) {
   const r = mapC.getBoundingClientRect();
   const px = (e.clientX - r.left) / r.width * mapC.width, py = (e.clientY - r.top) / r.height * mapC.height;
   return { x: Math.floor(px / T), y: Math.floor(py / T), vx: Math.round(px / T), vy: Math.round(py / T) };
 }
-function paintAt(c, v) {
+function stamp(c, v) {
   const b = state.brush, o = Math.floor((b - 1) / 2);
   let dirty = false;
   for (let dy = 0; dy < b; dy++) for (let dx = 0; dx < b; dx++) {
     const x = c.x + dx - o, y = c.y + dy - o;
-    if (state.grid.get(x, y) !== v && x >= 0 && y >= 0 && x < W && y < HH) { state.grid.set(x, y, v); dirty = true; }
+    if (x >= 0 && y >= 0 && x < W && y < HH && state.grid.get(x, y) !== v) { state.grid.set(x, y, v); dirty = true; }
   }
+  return dirty;
+}
+/** 前回位置から現在位置まで Bresenham で線を引く (速いドラッグでも途切れない) */
+function strokeTo(c, v) {
+  let dirty = false;
+  if (!last) dirty = stamp(c, v);
+  else {
+    let x0 = last.x, y0 = last.y;
+    const dx = Math.abs(c.x - x0), dy = -Math.abs(c.y - y0), sx = x0 < c.x ? 1 : -1, sy = y0 < c.y ? 1 : -1;
+    let err = dx + dy;
+    for (;;) {
+      dirty = stamp({ x: x0, y: y0 }, v) || dirty;
+      if (x0 === c.x && y0 === c.y) break;
+      const e2 = 2 * err;
+      if (e2 >= dy) { err += dy; x0 += sx; }
+      if (e2 <= dx) { err += dx; y0 += sy; }
+    }
+  }
+  last = c;
   if (dirty) changed();
 }
 function changed() { decorList = placeDecor(state.grid); drawInspector(); }
+
+// ---------------- undo / redo ----------------
+const undoStack = [], redoStack = [];
+function pushUndo() { undoStack.push(state.grid.data.slice()); if (undoStack.length > 100) undoStack.shift(); redoStack.length = 0; }
+function swapFrom(from, to) {
+  if (!from.length) return;
+  to.push(state.grid.data.slice());
+  state.grid = new Grid(W, HH, from.pop());
+  changed();
+}
+const undo = () => swapFrom(undoStack, redoStack), redo = () => swapFrom(redoStack, undoStack);
+$('#undo').onclick = undo; $('#redo').onclick = redo;
+window.addEventListener('keydown', e => {
+  if (!(e.metaKey || e.ctrlKey)) return;
+  const k = e.key.toLowerCase();
+  if (k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+  else if ((k === 'z' && e.shiftKey) || k === 'y') { e.preventDefault(); redo(); }
+});
+
 mapC.addEventListener('contextmenu', e => e.preventDefault());
-mapC.addEventListener('pointerdown', e => { painting = e.button === 2 ? 0 : state.tool; mapC.setPointerCapture(e.pointerId); paintAt(cellFromEvent(e), painting); });
-mapC.addEventListener('pointermove', e => { const c = cellFromEvent(e); state.hover = c; if (painting !== null) paintAt(c, painting); drawInspector(); });
-mapC.addEventListener('pointerup', () => { painting = null; });
+mapC.addEventListener('pointerdown', e => {
+  painting = e.button === 2 ? 0 : state.tool; last = null;
+  pushUndo();
+  mapC.setPointerCapture(e.pointerId);
+  strokeTo(cellFromEvent(e), painting);
+});
+mapC.addEventListener('pointermove', e => {
+  const c = cellFromEvent(e); state.hover = c;
+  if (painting !== null) strokeTo(c, painting);
+  drawInspector();
+});
+const endStroke = () => { painting = null; last = null; };
+mapC.addEventListener('pointerup', endStroke);
+mapC.addEventListener('pointercancel', endStroke);
 mapC.addEventListener('pointerleave', () => { state.hover = null; drawInspector(); });
+
+// ---------------- compare (split view) ----------------
+const cmpSel = $('#cmp'), cmpRange = $('#cmp-x');
+const cmpCanvas = document.createElement('canvas'); cmpCanvas.width = W * T; cmpCanvas.height = HH * T;
+const cmpCtx = cmpCanvas.getContext('2d');
+let cmpInit = params.get('cmp') || '';
+function buildCompare() {
+  const cur = cmpSel.value || cmpInit; cmpInit = '';
+  cmpSel.innerHTML = `<option value="">${tr().cmpOff}</option>` + Object.keys(METHODS).filter(id => id !== state.method)
+    .map(id => `<option value="${id}">${tr().m[id].name}</option>`).join('');
+  cmpSel.value = cur !== state.method && METHODS[cur] ? cur : '';
+  cmpRange.disabled = !cmpSel.value;
+}
+cmpSel.onchange = () => { cmpRange.disabled = !cmpSel.value; };
+
+// ---------------- sheet download ----------------
+$('#dl').onclick = () => {
+  const src = assets(state.theme).sheets[state.method][0];
+  src.toBlob(b => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(b); a.download = `autotile-${state.method}-${state.theme}.png`;
+    a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }, 'image/png');
+};
 
 // ---------------- tile sheet panel ----------------
 const sheetC = $('#sheet'), sctx = sheetC.getContext('2d');
@@ -178,6 +252,20 @@ const t0 = performance.now();
 function frame() {
   const time = (performance.now() - t0) / 1000;
   drawMap(ctx, state.grid, state.method, state.theme, time, { ...state.opt, decorList });
+  if (cmpSel.value) {
+    // 右側だけ比較対象の方式で描き直す / right side re-rendered with the other method
+    drawMap(cmpCtx, state.grid, cmpSel.value, state.theme, time, { ...state.opt, decorList });
+    const sx = Math.round(mapC.width * cmpRange.value / 100);
+    ctx.drawImage(cmpCanvas, sx, 0, mapC.width - sx, mapC.height, sx, 0, mapC.width - sx, mapC.height);
+    ctx.fillStyle = '#fff'; ctx.fillRect(sx - 1, 0, 2, mapC.height);
+    ctx.font = 'bold 13px system-ui, sans-serif'; ctx.textBaseline = 'top';
+    const tag = (txt, x, align) => {
+      ctx.textAlign = align; const w = ctx.measureText(txt).width + 14;
+      ctx.fillStyle = 'rgba(8,12,24,.78)'; ctx.fillRect(align === 'right' ? x - w : x, 8, w, 22);
+      ctx.fillStyle = '#fff'; ctx.fillText(txt, align === 'right' ? x - 7 : x + 7, 12);
+    };
+    tag(tr().m[state.method].name, sx - 8, 'right'); tag(tr().m[cmpSel.value].name, sx + 8, 'left');
+  }
   // hover highlight
   if (state.hover) {
     ctx.save(); ctx.strokeStyle = '#6fd3ff'; ctx.lineWidth = 2;

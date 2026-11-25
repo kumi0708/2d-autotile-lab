@@ -48,3 +48,8 @@ code { background: #0b1122; padding: 1px 5px; border-radius: 4px; color: var(--a
 .sheet-wrap { background: repeating-conic-gradient(#1a2038 0 25%, #141a2e 0 50%) 0 0 / 16px 16px; border-radius: 8px; padding: 8px; text-align: center; }
 #sheet { image-rendering: pixelated; max-width: 100%; }
 @media (max-width: 980px) { main { grid-template-columns: 1fr; } .stage { position: static; } }
+select { background: #232e52; color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; font: inherit; font-size: 12px; }
+.cmp-row { margin-top: 8px; }
+.cmp-row input[type=range] { flex: 1; accent-color: var(--acc); }
+.sheet-h { display: flex; justify-content: space-between; align-items: center; }
+.chip.small { padding: 3px 9px; font-size: 11px; text-transform: none; letter-spacing: 0; }

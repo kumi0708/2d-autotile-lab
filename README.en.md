@@ -45,15 +45,22 @@ Reference: [Autotile Tilesets Explained (SpriteCook)](https://www.spritecook.ai/
 
 ## How to use
 
-- **Left-drag** paints terrain, **right-drag** erases (brush 1–3).
+- **Left-drag** paints terrain, **right-drag** erases (brush 1–3). Strokes are joined with Bresenham lines, so fast drags leave no gaps.
+- **⌘Z / Ctrl+Z** undoes, **⌘⇧Z / Ctrl+Y** redoes (buttons too, up to 100 steps).
 - Use **Method** to switch between the four techniques. The same map is re-rendered with that technique's rules.
 - **Hover** a cell. The inspector shows its neighbourhood, the bitmask formula and the chosen tile, and the tile is outlined in the tile sheet.
 - View options:
   - **Grid**: the world grid (white). Dual-grid also shows the display grid (orange, dashed).
   - **Mask values**: each cell's bitmask as a number.
   - **Show lost info** (4-bit only): red circles mark the inner corners 4-bit cannot draw.
+- **Compare**: pick a second technique to split the map. The right side is re-rendered with it, and a slider moves the divider.
+- **PNG ⬇** saves the current technique's tile sheet in the current theme, ready to use as a game asset.
 - Themes: Meadow / Snow / Volcano / Dungeon. Maps: Islands / Lake / Rooms / Test (contains every case).
-- URL parameters, e.g. `?m=dual16&t=snow&grid&labels&lang=en`.
+- URL parameters, e.g. `?m=dual16&t=snow&grid&labels&lang=en&cmp=blob47`.
+
+![compare view](docs/images/ui-compare.png)
+
+> Left: 4-bit (red circles = lost inner corners). Right: 8-bit blob. Same data, two techniques either side of the divider.
 
 ![themes](docs/images/themes.png)
 
@@ -139,6 +146,10 @@ drawImage(sheet, ..., i*T - T/2, j*T - T/2); // drawn half a tile up-left
 <img src="docs/images/sheet-dual16.png" alt="dual-grid sheet" width="420">
 
 ![dual offset](docs/images/dual-offset.png)
+
+With "Grid" and "Mask values" on, the app shows the same overlay across the whole map:
+
+![dual UI](docs/images/ui-dual.png)
 
 ---
 
@@ -248,7 +259,7 @@ src/
   noise.js          periodic hash / value noise / fBm
   render.js         Canvas 2D rendering and overlays
   maps.js           map presets (islands, lake, rooms, test pattern)
-  main.js           UI, input, inspector
+  main.js           UI, input (line interpolation), undo/redo, compare view, inspector, PNG export
   i18n.js           Japanese / English strings
 test/test.mjs       logic tests and the pixel-equivalence check (Node)
 tools/

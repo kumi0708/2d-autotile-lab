@@ -51,6 +51,9 @@
           <div class="row"><span class="lbl" data-i18n="brush"></span>
             <button class="chip brush on" data-b="1">1</button><button class="chip brush" data-b="2">2</button><button class="chip brush" data-b="3">3</button>
           </div>
+          <div class="row">
+            <button class="chip" id="undo" title="Ctrl/⌘+Z">↶</button><button class="chip" id="redo" title="Ctrl/⌘+Shift+Z">↷</button>
+          </div>
         </div>
         <div>
           <h2 data-i18n="map"></h2>
@@ -74,6 +77,11 @@
           <label class="tg"><input type="checkbox" id="o-clouds" checked><span data-i18n="clouds"></span></label>
           <label class="tg" id="lost-wrap"><input type="checkbox" id="o-lost"><span data-i18n="lost"></span></label>
         </div>
+        <div class="row cmp-row">
+          <span class="lbl" data-i18n="compare"></span>
+          <select id="cmp"></select>
+          <input type="range" id="cmp-x" min="5" max="95" value="50">
+        </div>
       </div>
 
       <div class="card">
@@ -85,7 +93,7 @@
       </div>
 
       <div class="card">
-        <h2><span data-i18n="sheet"></span> <span id="sheet-meta" class="meta"></span></h2>
+        <h2 class="sheet-h"><span><span data-i18n="sheet"></span> <span id="sheet-meta" class="meta"></span></span><button class="chip small" id="dl">PNG ⬇</button></h2>
         <div class="sheet-wrap"><canvas id="sheet"></canvas></div>
       </div>
     </aside>
