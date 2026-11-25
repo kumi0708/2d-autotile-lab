@@ -1,0 +1,1 @@
+{"name":"2d-autotile-lab","private":true,"type":"module","scripts":{"test":"node test/test.mjs"}}

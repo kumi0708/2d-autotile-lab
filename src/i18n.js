@@ -1,0 +1,38 @@
+export const STR = {
+  ja: {
+    subtitle: 'オートタイル 4方式を描いて比べる実験室',
+    method: '方式', theme: 'テーマ', tools: 'ツール', map: 'マップ', view: '表示', inspector: 'インスペクタ', sheet: 'タイルシート',
+    paint: '塗る', erase: '消す', brush: 'ブラシ',
+    islands: '島', lake: '湖', rooms: '部屋', test: 'テスト', clear: '全消し', fill: '全塗り',
+    grid: 'グリッド', labels: 'マスク値', decor: '装飾', clouds: '環境光', lost: '情報欠落を表示',
+    meadow: '草原', snow: '雪原', volcano: '火山', dungeon: '地下迷宮',
+    hint: '左ドラッグで塗る / 右ドラッグで消す / マップ上をホバーすると判定の中身が見えます',
+    hoverNone: 'マップ上にカーソルを置くと、そのマスの近傍とビットマスク計算を表示します。',
+    empty: '空マス (描画しない)',
+    lostNote: '赤丸 = 4-bit では表現できない内角',
+    m: {
+      edge16: { name: '4-bit エッジ', count: '16枚', desc: '上下左右4方向だけを見る最も単純な方式。<code>N·1 + E·2 + S·4 + W·8</code> の0〜15がそのままタイル番号。斜めを見ないので<b>内角(凹んだ角)が描けない</b>。「情報欠落を表示」で確認できます。' },
+      blob47: { name: '8-bit Blob', count: '47枚', desc: '8近傍を見る方式。256通りのうち「隣接する2辺が両方埋まっている時だけ角ビットを数える」という縮約で<b>47種</b>に減る。内角も正しく描ける定番方式。' },
+      dual16: { name: 'デュアルグリッド', count: '15+1枚', desc: '表示用のグリッドを<b>半マスずらし</b>、各表示タイルが4隅のワールドセルを見る。<code>TL·1 + TR·2 + BR·4 + BL·8</code>。16通り(うち1つは空)だけで47-blobと<b>ピクセル単位で同じ</b>結果になる。' },
+      quarter: { name: '1/4 ミニタイル', count: '20ピース', desc: '1マスを4分割し、各象限が「横・縦・斜め」の3マスを見て5種(外角/横辺/縦辺/内角/全面)から選ぶ。2×3タイルの素材から47通りを合成する、RPGツクールA2形式の考え方。' },
+    },
+  },
+  en: {
+    subtitle: 'A playground for comparing four autotile techniques',
+    method: 'Method', theme: 'Theme', tools: 'Tools', map: 'Map', view: 'View', inspector: 'Inspector', sheet: 'Tile sheet',
+    paint: 'Paint', erase: 'Erase', brush: 'Brush',
+    islands: 'Islands', lake: 'Lake', rooms: 'Rooms', test: 'Test', clear: 'Clear', fill: 'Fill',
+    grid: 'Grid', labels: 'Mask values', decor: 'Decor', clouds: 'Ambience', lost: 'Show lost info',
+    meadow: 'Meadow', snow: 'Snow', volcano: 'Volcano', dungeon: 'Dungeon',
+    hint: 'Left-drag to paint / right-drag to erase / hover to inspect the bitmask',
+    hoverNone: 'Hover a cell to see its neighbourhood and how the bitmask is computed.',
+    empty: 'Empty cell (nothing drawn)',
+    lostNote: 'Red circles = inner corners that 4-bit cannot express',
+    m: {
+      edge16: { name: '4-bit edge', count: '16 tiles', desc: 'Looks only at the 4 cardinal neighbours. <code>N·1 + E·2 + S·4 + W·8</code> (0–15) is the tile index. Because diagonals are ignored it <b>cannot draw inner corners</b> — turn on “Show lost info”.' },
+      blob47: { name: '8-bit blob', count: '47 tiles', desc: 'Looks at all 8 neighbours. A corner bit only counts when both adjacent edges are set, which collapses 256 combinations into <b>47</b>. The classic “complete” set.' },
+      dual16: { name: 'Dual-grid', count: '15+1 tiles', desc: 'The display grid is <b>offset by half a tile</b>; every display tile reads the 4 world cells at its corners: <code>TL·1 + TR·2 + BR·4 + BL·8</code>. Only 16 cases, yet the result is <b>pixel-identical</b> to the 47-tile blob.' },
+      quarter: { name: 'Quarter tiles', count: '20 pieces', desc: 'Each cell is split into 4 quadrants; each one looks at its horizontal, vertical and diagonal neighbour and picks one of 5 pieces (outer / h-edge / v-edge / inner / full). RPG-Maker-A2-style composition of all 47 cases from a 2×3 sheet.' },
+    },
+  },
+};

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Autotile Lab — オートタイル実験室</title>
+  <meta name="description" content="4-bit / 47-blob / dual-grid / quarter-tile autotiling with procedurally generated pixel art.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%232a7fc1'/><rect x='3' y='3' width='10' height='9' rx='3' fill='%235fb043'/><rect x='3' y='10' width='10' height='3' fill='%238a5a36'/></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo"></div>
+      <div>
+        <h1>Autotile Lab</h1>
+        <p data-i18n="subtitle"></p>
+      </div>
+    </div>
+    <div class="head-right">
+      <button id="lang" class="chip">EN</button>
+      <a class="chip" href="https://github.com/kumi0708/2d-autotile-lab" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="stage">
+      <div class="canvas-wrap"><canvas id="map"></canvas></div>
+      <p class="hint" data-i18n="hint"></p>
+    </section>
+
+    <aside>
+      <div class="card">
+        <h2 data-i18n="method"></h2>
+        <div id="methods" class="methods"></div>
+        <p id="desc" class="desc"></p>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="theme"></h2>
+        <div id="themes" class="row wrap"></div>
+      </div>
+
+      <div class="card two">
+        <div>
+          <h2 data-i18n="tools"></h2>
+          <div class="row">
+            <button class="chip tool on" data-tool="1" data-i18n="paint"></button>
+            <button class="chip tool" data-tool="0" data-i18n="erase"></button>
+          </div>
+          <div class="row"><span class="lbl" data-i18n="brush"></span>
+            <button class="chip brush on" data-b="1">1</button><button class="chip brush" data-b="2">2</button><button class="chip brush" data-b="3">3</button>
+          </div>
+        </div>
+        <div>
+          <h2 data-i18n="map"></h2>
+          <div class="row wrap">
+            <button class="chip preset" data-p="islands" data-i18n="islands"></button>
+            <button class="chip preset" data-p="lake" data-i18n="lake"></button>
+            <button class="chip preset" data-p="rooms" data-i18n="rooms"></button>
+            <button class="chip preset" data-p="test" data-i18n="test"></button>
+            <button class="chip preset" data-p="clear" data-i18n="clear"></button>
+            <button class="chip preset" data-p="fill" data-i18n="fill"></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="view"></h2>
+        <div class="row wrap">
+          <label class="tg"><input type="checkbox" id="o-grid"><span data-i18n="grid"></span></label>
+          <label class="tg"><input type="checkbox" id="o-labels"><span data-i18n="labels"></span></label>
+          <label class="tg"><input type="checkbox" id="o-decor" checked><span data-i18n="decor"></span></label>
+          <label class="tg"><input type="checkbox" id="o-clouds" checked><span data-i18n="clouds"></span></label>
+          <label class="tg" id="lost-wrap"><input type="checkbox" id="o-lost"><span data-i18n="lost"></span></label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="inspector"></h2>
+        <div class="inspector">
+          <canvas id="nb" width="120" height="120"></canvas>
+          <div id="formula" class="formula"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span data-i18n="sheet"></span> <span id="sheet-meta" class="meta"></span></h2>
+        <div class="sheet-wrap"><canvas id="sheet"></canvas></div>
+      </div>
+    </aside>
+  </main>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
